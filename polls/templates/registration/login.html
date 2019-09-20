@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Log in</title>
+  </head>
+  <body>
+    <div>
+      <form action="{{ next }}" method="POST">
+        {% csrf_token %}
+        {{ form.username.label_tag }}
+        {{ form.username }}
+
+        {{ form.password.label_tag }}
+        {{ form.password }}
+
+        {{ form.errors }}
+        <input type="submit" name="submit" value="login">
+      </form>
+    </div>
+  </body>
+</html>

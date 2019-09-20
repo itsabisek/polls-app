@@ -8,5 +8,5 @@ urlpatterns = [
 
     url(r'^$', include('polls.urls')),
     url(r'^polls/', include('polls.urls', namespace="polls")),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', include(admin.site.urls), name='admin'),
 ]
