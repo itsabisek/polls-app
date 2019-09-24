@@ -42,6 +42,43 @@ def vote(request, question_id):
     return HttpResponseRedirect(reverse('polls:results', args=(q.id,)))
 
 
+def all_polls(request):
+    questions_list = Question.objects.all()
+    return render(request, 'polls/all_polls.html', {'questions_list': questions_list})
+
+
+def login(request):
+    pass
+
+
+def register(request):
+    pass
+
+
+def user(request):
+    pass
+
+
+def new_poll(request):
+    pass
+
+
+def user_asked(request):
+    pass
+
+
+def user_answered(request):
+    pass
+
+
+def user_asked(request):
+    pass
+
+
+def logout(request):
+    pass
+
+
 # def index(request):
 #     questions_list = Question.objects.all()
 #     context = {
