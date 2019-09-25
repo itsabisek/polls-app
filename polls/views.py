@@ -4,6 +4,9 @@ from .models import Question, Choice
 from django.template import loader
 from django.core.urlresolvers import reverse
 from django.views import generic
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, logout, login
+from django.contrib.auth.models import User
 
 
 # Create your views here.
@@ -48,35 +51,67 @@ def all_polls(request):
 
 
 def login(request):
-    pass
+    if request.user is not None:
+        HttpResponseRedirect(reverse('polls:user')))
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(request,username=username,password=password)
 
+    if user is not None:
+        login(request,user)
+
+    else:
+        HttpResponseRedirect(reverse('polls:user'))
 
 def register(request):
-    pass
+    name = request.POST['name']
+    username = request.POST['username']
+    password = request.POST['password']
 
+    user = User.objects.filter(username=username)
+    if user is not None:
+        HttpResponseRedirect(reverse('polls:login'))
 
+    user = User.objects.create_user(username=username, first_name=name, password=password)
+    user.save()
+
+    login(request,authenticate(request,username=username, password=password))
+
+    HttpResponseRedirect(reverse('polls:user'))
+
+@login_required
 def user(request):
-    pass
+    if !request.user.is_authenticated:
+        HttpResponseRedirect(reverse('polls:login'))
+
+    questions_list = User.objects.get(pk=request.user.id).question_set.order_by('-asked_date')[:10]
+    context = {"questions_list": questions_list}
+
+    return render(request, 'polls/user.html', context=context)
 
 
+@login_required
 def new_poll(request):
-    pass
+
+    return render(request, 'polls/new_poll.html')
 
 
-def user_asked(request):
-    pass
+# def user_asked(request):
+#     questions_list = Question.objects.all()
+#     context = {'questions_list': questions_list}
+#     return render(request, 'polls/user_asked.html', context)
+#
+#
+# def user_answered(request):
+#     questions_list = Question.objects.all()
+#     context = {'questions_list': questions_list}
+#     return render(request, 'polls/user_asked.html', context)
 
 
-def user_answered(request):
-    pass
-
-
-def user_asked(request):
-    pass
-
-
+@login_required
 def logout(request):
-    pass
+    logout(request)
+    HttpResponseRedirect(reverse('polls:index'))
 
 
 # def index(request):
