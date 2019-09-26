@@ -1,0 +1,16 @@
+<h1>Hello {{ user.name }}</h1>
+{% if questions_list %}
+  <h1>Recently started polls</h1>
+    <ul>
+    {% for question in questions_list %}
+        <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+        <br><br>
+    {% endfor %}
+    </ul>
+    <br><br>
+    <a href="{% url 'polls:user_asked' %}">Show all your polls</a>
+{% else %}
+    <p>No polls are available.</p>
+
+{% endif %}
+<a href="{% url 'polls:new_poll' %}">Start a new poll</a>

@@ -2,15 +2,15 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title>New Poll</title>
+    <title>Log in</title>
   </head>
   <body>
-    <p><b>Start New Poll</b></p>
+    <p><b>LOG IN</b></p>
     <div>
       <form action="" method="POST">
         {% csrf_token %}
         {{ form }}
-        <input type="submit" name="Create" value="Create">
+        <input type="submit" name="Login" value="Login">
       </form>
     </div>
   </body>
