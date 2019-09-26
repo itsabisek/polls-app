@@ -7,7 +7,7 @@ urlpatterns = [
     # url(r'^(?P<pk>[0-9]+)/detail/$', polls_views.DetailView.as_view(), name="detail"),
     # url(r'^poll/(?P<pk>[0-9]+)/$', polls_views.DetailView.as_view(), name="detail"),
 
-    url(r'^login/$', polls_views.login_user, name="login"),
+    url(r'^login/$', polls_views.auth_user, name="login"),
     url(r'^register/$', polls_views.register, name="register"),
 
     url(r'^user/newpoll/$', polls_views.new_poll, name="new_poll"),

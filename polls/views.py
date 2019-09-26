@@ -54,8 +54,6 @@ def all_polls(request):
 
 
 def auth_user(request):
-    if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('polls:user'))
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
