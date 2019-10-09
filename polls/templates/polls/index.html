@@ -10,6 +10,8 @@
     <a href="{% url 'polls:all_polls' %}">Show all polls</a>
 {% else %}
     <p>No polls are available.</p>
-    <a href="{% url 'polls:login' %}">Login to start a new poll</a>
-    <a href="{% url 'polls:register' %}">New Here? Register</a>
 {% endif %}
+<br><br>
+<a href="{% url 'polls:login' %}">Login to start a new poll</a>
+<br><br>
+<a href="{% url 'polls:register' %}">New Here? Register</a>

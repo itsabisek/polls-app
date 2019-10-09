@@ -86,7 +86,7 @@ def register(request):
 
             user = User.objects.filter(username=username)
 
-            if user is not None:
+            if len(user) != 0:
                 return HttpResponseRedirect(reverse('polls:login'))
 
             else:
@@ -125,7 +125,7 @@ def new_poll(request):
             choice_one = request.POST['choice_one']
             choice_two = request.POST['choice_two']
 
-            question = Question(question_text=question, asked_date=datetime.now())
+            question = Question(user=request.user, question_text=question, asked_date=datetime.now())
             question.save()
 
             choice_1 = Choice(choice_text=choice_one, question=question)
@@ -143,9 +143,9 @@ def new_poll(request):
 
 @login_required
 def user_asked(request):
-    questions_list = User.objects.get(pk=request.user.id).question_set
+    questions_list = User.objects.get(pk=request.user.id).question_set.all()
     context = {'questions_list': questions_list}
-    return render(request, 'polls/user_asked.html', context)
+    return render(request, 'polls/user_asked.html', context=context)
 
 
 @login_required

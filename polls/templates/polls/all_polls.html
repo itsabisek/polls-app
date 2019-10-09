@@ -8,5 +8,9 @@
     </ul>
 {% else %}
     <p>No polls are available.</p>
-    <a href="{% url 'polls:login' %}">Login to start a new poll</a>
 {% endif %}
+
+<br><br>
+<a href="{% url 'polls:login' %}">Login to start a new poll</a>
+<br><br>
+<a href="{% url 'polls:register' %}">New Here? Register</a>
