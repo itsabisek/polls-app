@@ -1,16 +1,24 @@
-from django.shortcuts import render, get_object_or_404
-# from django.http import HttpResponse, Http404
-from django.http import HttpResponseRedirect
 from .models import Question, Choice, Answered
-# from django.template import loader
+from .forms import LoginForm, RegistrationForm, NewPollForm
+from datetime import datetime
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.views import generic
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, logout as logout_user, login as login_user
 from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
-from .forms import LoginForm, RegistrationForm, NewPollForm
-from datetime import datetime
+
+import logging
+
+formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] [%(name)s] - %(message)s")
+handler = logging.FileHandler('view_logs.log')
+handler.setFormatter(formatter)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 
 # Generic View class for index page
@@ -54,11 +62,12 @@ class ResultsView(generic.DetailView):
 # Function to accept POST request from voting page and redirect to results page
 # after updating vote in database
 def vote(request, question_id):
-    q = get_object_or_404(Question, pk=question_id)
 
     try:
+        q = get_object_or_404(Question, pk=question_id)
         selected_choice = q.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
+        logger.warning("No choice was selected while voting by user-%d" % request.user.id)
         return render(request, 'polls/detail.html', {
             'question': q,
             'error_message': 'You did not select a choice'
@@ -66,8 +75,10 @@ def vote(request, question_id):
     else:
         selected_choice.votes += 1
         selected_choice.save()
+        logger.info("User-%d has voted for question-%d" % (request.user.id, q.id))
         exists = Answered.objects.filter(user_id=request.user.id, question_id=q.id)
         if len(exists) == 0:
+            logger.info("User has already voted for this question once will not update in db")
             answered = Answered(user_id=request.user.id, question_id=q.id)
             answered.save()
 
@@ -86,14 +97,18 @@ def auth_user(request):
                 password = form.cleaned_data['password']
 
                 user = authenticate(username=username, password=password)
-
+                logger.info("User credentials entered: username-%s" % username)
                 if user is not None:
+                    logger.info("User credentials has been validated for username-%s" % username)
+                    logger.info("Logging in user-%d" % user.id)
                     login_user(request, user)
                     return HttpResponseRedirect(reverse('polls:user'))
                 else:
+                    logger.warning("User credentials could not be validated for username-%s" % username)
                     error_message = "Invalid Username/Password"
         except Exception, e:
-            print "Exception- ", e
+            logger.error("Exception caught- %s" % e, exc_info=True)
+
     else:
         form = LoginForm()
 
@@ -104,6 +119,7 @@ def auth_user(request):
 
 # Funtion to handle registration of new user
 def register(request):
+
     error_message = ""
     if request.method == 'POST':
         try:
@@ -114,18 +130,22 @@ def register(request):
                 username = request.POST['username']
                 password = request.POST['password']
 
+                logger.info("Checking credentials for new username-%s" % username)
                 user = User.objects.filter(username=username)
 
                 if len(user) != 0:
                     error_message = "Username already exists! Choose a different username"
+                    logger.warning("Username already exists")
 
                 else:
                     user = User.objects.create_user(username=username, first_name=name, password=password)
                     user.save()
+                    logger.info("Added username-%s to database. User Id-%d" % (username, user.id))
                     login_user(request, authenticate(username=username, password=password))
+                    logger.info("Logging in user-%d" % user.id)
                     return HttpResponseRedirect(reverse('polls:user'))
         except Exception, e:
-            print "Exception Caught: ", e
+            logger.error("Caught exception: %s" % e, exc_info=True)
     else:
         form = RegistrationForm()
 
@@ -138,15 +158,12 @@ def register(request):
 # created by the user
 @login_required
 def user(request):
-
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('polls:login'))
     try:
         questions_list = Question.objects.order_by('-asked_date')[:5]
     except Exception, e:
-        print "Exception Caught: ", e
-    context = {"questions_list": questions_list}
+        logger.error("Exception caught: %s" % e, exc_info=True)
 
+    context = {"questions_list": questions_list}
     return render(request, 'polls/user.html', context=context)
 
 
@@ -172,9 +189,12 @@ def new_poll(request):
                 choice_1.save()
                 choice_2.save()
 
+                logger.info("New poll started by user-%(user)d. Question id-%(question)d" %
+                            {'user': request.user.id, 'question': question.id})
+
                 return HttpResponseRedirect(reverse('polls:user'))
         except Exception, e:
-            print "Exception Caught: ", e
+            logger.error("Exception caught: %s" % e, exc_info=True)
     else:
         form = NewPollForm()
 
@@ -184,19 +204,13 @@ def new_poll(request):
 # View function to show all polls created by the user
 @login_required
 def user_asked(request):
-    questions_list = get_object_or_404(User, pk=request.user.id).question_set.all()
-    context = {'questions_list': questions_list}
-    return render(request, 'polls/user_asked.html', context=context)
-
-
-# Function to logout current user and redirecting to home page
-@login_required
-def logout(request):
     try:
-        logout_user(request)
+        questions_list = get_object_or_404(User, pk=request.user.id).question_set.all()
+        logger.info("User-%d has asked %d polls" % (request.user.id, len(questions_list)))
+        context = {'questions_list': questions_list}
+        return render(request, 'polls/user_asked.html', context=context)
     except Exception, e:
-        print "Exception caught: ", e
-    return HttpResponseRedirect(reverse('polls:index'))
+        logger.error("Exception caught- %s" % e, exc_info=True)
 
 
 # View function that shows all polls that the user has answered
@@ -206,7 +220,19 @@ def user_answered(request):
         question_ids = Answered.objects.filter(user_id=request.user.id).values_list('question_id')
         question_ids = [question_id[0] for question_id in question_ids]
         questions_list = Question.objects.filter(pk__in=question_ids)
+        logger.info("User-%d has voted for %d polls" % (request.user.id, len(question_ids)))
         context = {'questions_list': questions_list}
         return render(request, 'polls/user_answered.html', context)
     except Exception, e:
-        print "Exception caught- ", e
+        logger.error("Exception caught- %s" % e, exc_info=True)
+
+
+# Function to logout current user and redirecting to home page
+@login_required
+def logout(request):
+    try:
+        logger.info("Logging out user-%d" % request.user.id)
+        logout_user(request)
+        return HttpResponseRedirect(reverse('polls:index'))
+    except Exception, e:
+        logger.error("Exception caught- %s" % e, exc_info=True)

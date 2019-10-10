@@ -1,0 +1,28 @@
+[INFO] [polls.views] - User credentials entered: username-abisek
+[INFO] [polls.views] - User credentials has been validated for username-abisek
+[INFO] [polls.views] - Logging in user-2
+[INFO] [polls.views] - User-2 has voted for question-15
+[INFO] [polls.views] - User has already voted for this question once will not update in db
+[INFO] [polls.views] - User-2 has asked 3 polls
+[INFO] [polls.views] - User-2 has voted for 5 polls
+[INFO] [polls.views] - New poll started by user-2. Question id-16
+[INFO] [polls.views] - User-2 has asked 4 polls
+[INFO] [polls.views] - Logging out user-2
+[INFO] [polls.views] - User credentials entered: username-abisek
+[INFO] [polls.views] - User credentials has been validated for username-abisek
+[INFO] [polls.views] - Logging in user-2
+[INFO] [polls.views] - Logging out user-2
+[INFO] [polls.views] - Rendering new registration form
+[INFO] [polls.views] - Registering new user
+[INFO] [polls.views] - Checking credentials
+[WARNING] [polls.views] - Username already exists
+[INFO] [polls.views] - Registering new user
+[INFO] [polls.views] - Checking credentials
+[INFO] [polls.views] - Added new user to database
+[INFO] [polls.views] - Logging in user-4
+[INFO] [polls.views] - User-4 has asked 0 polls
+[INFO] [polls.views] - User-4 has voted for 0 polls
+[INFO] [polls.views] - Logging out user-4
+[2019-10-10 17:51:50,639] [INFO] [polls.views] - User credentials entered: username-abisek
+[2019-10-10 17:51:50,639] [INFO] [polls.views] - User credentials has been validated for username-abisek
+[2019-10-10 17:51:50,640] [INFO] [polls.views] - Logging in user-2
