@@ -7,11 +7,14 @@
   <body>
     <p><b>REGISTER</b></p>
     <div>
+      {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
       <form action="" method="POST">
         {% csrf_token %}
         {{ form }}
         <input type="submit" name="Register" value="Register">
       </form>
     </div>
+    <br><br>
+    <a href="{% url 'polls:login' %}">Have an account? Log In</a>
   </body>
 </html>

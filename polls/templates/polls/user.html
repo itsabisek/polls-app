@@ -7,13 +7,17 @@
         <br><br>
     {% endfor %}
     </ul>
-    <br><br>
-    <a href="{% url 'polls:user_asked' %}">Show all your polls</a>
+    <a href="{% url 'polls:all_polls' %}">Show all</a>
     <br><br>
 {% else %}
     <p>No polls are available.</p>
 
 {% endif %}
+<br><br>
+<a href="{% url 'polls:user_asked' %}">See all your polls</a>
+<br><br>
 <a href="{% url 'polls:new_poll' %}">Start a new poll</a>
 <br><br>
+<a href="{% url 'polls:user_answered' %}">See all polls you have voted for</a>
+<br><br><br><br>
 <a href="{% url 'polls:logout' %}">Logout</a>

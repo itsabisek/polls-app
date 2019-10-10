@@ -1,0 +1,18 @@
+<h1>Hello {{ user.first_name }}</h1>
+
+{% if questions_list %}
+  <h1>All polls answered</h1>
+    <ul>
+    {% for question in questions_list %}
+        <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+        <br><br>
+    {% endfor %}
+    </ul>
+    <br><br>
+{% else %}
+    <p>You have not voted for any polls</p>
+    <br><br>
+    <a href="{% url 'polls:all_polls' %}">Show all polls</a>
+{% endif %}
+<br><br>
+<a href="{% url 'polls:user' %}">Return to home page</a>

@@ -1,10 +1,3 @@
-polls/__init__.pyc
-polls/admin.pyc
-polls/forms.pyc
-polls/models.pyc
-polls/urls.pyc
-polls/views.pyc
-polls_site/settings.pyc
-polls_site/urls.pyc
-polls_site/wsgi.pyc
-manage.pyc
+polls_site/*.pyc
+polls/migrations/*.pyc
+polls/*.pyc
