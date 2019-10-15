@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'polls',
+    'rest_framework',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -103,3 +104,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 LOGIN_URL = 'polls:login'
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.TemplateHTMLRenderer',
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer'
+    ],
+}

@@ -26,3 +26,17 @@
 [2019-10-10 17:51:50,639] [INFO] [polls.views] - User credentials entered: username-abisek
 [2019-10-10 17:51:50,639] [INFO] [polls.views] - User credentials has been validated for username-abisek
 [2019-10-10 17:51:50,640] [INFO] [polls.views] - Logging in user-2
+[2019-10-11 13:04:24,447] [INFO] [polls.views] - User-2 has voted for question-16
+[2019-10-11 13:04:24,458] [INFO] [polls.views] - User has already voted for this question once will not update in db
+[2019-10-11 13:04:43,338] [INFO] [polls.views] - Logging out user-2
+[2019-10-11 13:12:21,728] [INFO] [polls.views] - User credentials entered: username-abisek
+[2019-10-11 13:12:21,729] [INFO] [polls.views] - User credentials has been validated for username-abisek
+[2019-10-11 13:12:21,729] [INFO] [polls.views] - Logging in user-2
+[2019-10-11 13:13:30,331] [INFO] [polls.views] - User-2 has asked 4 polls
+[2019-10-11 13:13:49,630] [INFO] [polls.views] - User-2 has asked 4 polls
+[2019-10-11 13:14:44,135] [INFO] [polls.views] - Logging out user-2
+[2019-10-14 11:18:35,077] [INFO] [polls.views] - User credentials entered: username-abisek
+[2019-10-14 11:18:35,077] [INFO] [polls.views] - User credentials has been validated for username-abisek
+[2019-10-14 11:18:35,077] [INFO] [polls.views] - Logging in user-2
+[2019-10-14 11:20:23,252] [INFO] [polls.views] - User-2 has asked 4 polls
+[2019-10-14 11:20:40,689] [INFO] [polls.views] - Logging out user-2
