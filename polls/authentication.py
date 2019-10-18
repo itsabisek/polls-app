@@ -1,6 +1,4 @@
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework import authentication
-from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 import jwt
 

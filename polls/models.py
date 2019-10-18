@@ -41,6 +41,7 @@ class Choice(models.Model):
 class Answered(models.Model):
     user_id = models.IntegerField()
     question_id = models.IntegerField()
+    answered_on = models.DateTimeField('answered date')
 
     def __unicode__(self):
         return "User : %s Question : %s" % (str(self.user_id), str(self.question_id))
