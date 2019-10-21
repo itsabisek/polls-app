@@ -161,13 +161,18 @@ def login_user(request):
         return HttpResponseNotFound("The page you are asking for does not exist")
 
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-
         try:
+            if len(request.POST) != 0:
+                username = request.POST['username']
+                password = request.POST['password']
+            else:
+                data = json.loads(request.body.decode('utf-8'))
+                username = data['username']
+                password = data['password']
+
             user = authenticate(username=username, password=password)
             if user is None:
-                return HttpResponseNotFound("The username is not correct")
+                return HttpResponseForbidden("The username/password is not correct")
         except Exception, e:
             print e
 
@@ -184,13 +189,19 @@ def register_user(request):
     if request.method == "POST":
         try:
             authenticator = JSONWebTokenAuthentication()
-            name = request.POST['name']
-            username = request.POST['username']
-            password = request.POST['password']
+            if len(request.POST) != 0:
+                name = request.POST['name']
+                username = request.POST['username']
+                password = request.POST['password']
+            else:
+                data = json.loads(request.body.decode('utf-8'))
+                name = data['name']
+                username = data['username']
+                password = data['password']
 
             user = User.objects.filter(username=username)
             if len(user) != 0:
-                return HttpResponseForbidden("The user already exists")
+                return HttpResponseForbidden("This username already exists")
 
             user = User.objects.create_user(username=username, first_name=name, password=password)
             user.save()
