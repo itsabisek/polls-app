@@ -33,22 +33,25 @@ class UserDashboardView(generics.ListAPIView):
     renderer_classes = [JSONRenderer]
 
     def list(self, request):
-        authenticator = JSONWebTokenAuthentication()
-        is_auth = authenticator.authenticate(request)
-        if is_auth:
-            claim = authenticator.get_claim(request)
-            answered_by_user = Answered.objects.filter(user_id=claim).values_list('question_id')
-            answered_by_user = [question[0] for question in answered_by_user]
-            asked_by_user = User.objects.get(pk=claim).question_set.all().values_list('id')
-            asked_by_user = [question[0] for question in asked_by_user]
-            questions_to_exclude = set(answered_by_user + asked_by_user)
+        try:
+            authenticator = JSONWebTokenAuthentication()
+            is_auth = authenticator.authenticate(request)
+            if is_auth:
+                claim = authenticator.get_claim(request)
+                answered_by_user = Answered.objects.filter(user_id=claim).values_list('question_id')
+                answered_by_user = [question[0] for question in answered_by_user]
+                asked_by_user = User.objects.get(pk=claim).question_set.all().values_list('id')
+                asked_by_user = [question[0] for question in asked_by_user]
+                questions_to_exclude = set(answered_by_user + asked_by_user)
 
-            queryset = Question.objects.all().exclude(pk__in=questions_to_exclude)
-            serializer = QuestionSerializer(queryset, many=True)
-            return Response(serializer.data, status=200)
-        else:
-            return HttpResponseForbidden("The page you are trying to view cannot be loaded")
-
+                queryset = Question.objects.all().exclude(pk__in=questions_to_exclude)
+                serializer = QuestionSerializer(queryset, many=True)
+                return Response(serializer.data, status=200)
+            else:
+                return HttpResponseForbidden("The page you are trying to view cannot be loaded")
+        except Exception, e:
+            print e
+            return HttpResponseForbidden("The page you requested cannot be loaded")
 
 # Returns JSON for all questions asked by the user
 class UserAskedView(generics.ListAPIView):

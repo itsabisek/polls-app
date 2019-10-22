@@ -1,10 +1,9 @@
-import React from 'react'
+import React from 'react';
 import { Layout, Menu } from 'antd';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 const { Header, Content, Footer } = Layout;
 
-const CustomLayout = (props) => {
-
+const UserLayout = (props) => {
 
     return (
         <Layout className="layout">
@@ -16,13 +15,13 @@ const CustomLayout = (props) => {
                     style={{ lineHeight: '64px' }}
                 >
                     <Menu.Item key="1">
-                        <Link to='/login'>
-                            Log In
+                        <Link to='/use'>
+                            Home
                         </Link>
                     </Menu.Item>
                     <Menu.Item key="2">
-                        <Link to='/signup'>
-                            Sign Up
+                        <Link to='/logout'>
+                            Log Out
                         </Link>
                     </Menu.Item>
                 </Menu>
@@ -37,6 +36,6 @@ const CustomLayout = (props) => {
     )
 }
 
-export default withRouter(CustomLayout)
+export default UserLayout
 
 

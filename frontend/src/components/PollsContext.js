@@ -5,10 +5,7 @@ export const PollsContext = createContext();
 export const PollsProvider = (props) => {
     const [state, setState] = useState({
         polls: [],
-        token: "",
-        user_polls: [],
-        user_asked: [],
-        user_answered: []
+        isAuthenticated: false,
     });
 
 

@@ -8,14 +8,6 @@ export const QuestionList = () => {
 
     const [state, setState] = useContext(PollsContext)
 
-    useEffect(() => {
-        Axios.get('http://localhost:8000/polls/api/all')
-            .then(response => {
-                setState({ ...state, polls: response.data })
-                console.log(response.data)
-            })
-    }, []);
-
     return (
         <div>
             <Question data={state.polls} />
