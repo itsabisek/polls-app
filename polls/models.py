@@ -10,7 +10,7 @@ import datetime
 class Question(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=0)
     question_text = models.CharField(max_length=200)
-    asked_date = models.DateTimeField('date asked')
+    asked_date = models.DateTimeField('date asked', default=timezone.now())
 
     # Returns True if poll was created with last 1 day; False otherwise
     def was_published_recently(self):
@@ -41,7 +41,7 @@ class Choice(models.Model):
 class Answered(models.Model):
     user_id = models.IntegerField()
     question_id = models.IntegerField()
-    answered_on = models.DateTimeField('answered date')
+    answered_on = models.DateTimeField('answered date', default=timezone.now())
 
     def __unicode__(self):
         return "User : %s Question : %s" % (str(self.user_id), str(self.question_id))

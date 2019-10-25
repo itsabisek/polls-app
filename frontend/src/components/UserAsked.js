@@ -10,7 +10,6 @@ const UserAsked = (props) => {
     const [state, setState] = useContext(PollsContext)
 
     useEffect(() => {
-        console.log(`Authentication status before fetching asked req: ${state.isA}`)
         if (ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) {
             const config = {
                 headers: {
@@ -32,7 +31,7 @@ const UserAsked = (props) => {
 
 
     return (
-        <UserLayout>
+        <UserLayout selected="asked">
             <QuestionList />
         </UserLayout>
 

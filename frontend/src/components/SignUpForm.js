@@ -63,7 +63,7 @@ const NormalSignUpForm = (props) => {
 
     const { getFieldDecorator } = props.form;
     return (
-        <CustomLayout>
+        <CustomLayout selected='signup'>
             <Form onSubmit={handleSubmit} className="login-form">
                 <Form.Item>
                     {getFieldDecorator('name', {

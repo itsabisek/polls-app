@@ -7,8 +7,6 @@ import ls from 'local-storage';
 
 const NormalLoginForm = (props) => {
 
-    const [state, setState] = useContext(PollsContext)
-
     useEffect(() => {
         if (ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) {
             props.history.push('/user')
@@ -45,8 +43,11 @@ const NormalLoginForm = (props) => {
 
     const { getFieldDecorator } = props.form;
     return (
-        <CustomLayout >
-            <Form onSubmit={handleSubmit} className="login-form">
+        <CustomLayout selected="login">
+            <Form
+                onSubmit={handleSubmit}
+                className="login-form"
+            >
                 <Form.Item>
                     {getFieldDecorator('username', {
                         rules: [{ required: true, message: 'Please input your username!' }],

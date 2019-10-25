@@ -18,10 +18,12 @@ class QuestionDetailSerializer(serializers.BaseSerializer):
 
     def to_representation(self, obj):
         choices = obj.choice_set.all()
+        total_votes = Answered.objects.filter(question_id=obj.id).count()
         return{
             'question_id': obj.id,
             'question_text': obj.question_text,
             'asked_date': obj.asked_date,
+            'votes': total_votes,
             'choices': [
                 {
                     'id': choices[0].id,
@@ -32,6 +34,29 @@ class QuestionDetailSerializer(serializers.BaseSerializer):
                     'id': choices[1].id,
                     'choice_text':choices[1].choice_text,
                     'choice_votes':choices[1].votes,
+                }
+            ]
+        }
+
+
+class QuestionDetailNoVotesSerializer(serializers.BaseSerializer):
+
+    def to_representation(self, obj):
+        choices = obj.choice_set.all()
+        total_votes = Answered.objects.filter(question_id=obj.id).count()
+        return{
+            'question_id': obj.id,
+            'question_text': obj.question_text,
+            'asked_date': obj.asked_date,
+            'votes': total_votes,
+            'choices': [
+                {
+                    'id': choices[0].id,
+                    'choice_text':choices[0].choice_text,
+                },
+                {
+                    'id': choices[1].id,
+                    'choice_text':choices[1].choice_text,
                 }
             ]
         }

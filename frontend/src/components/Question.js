@@ -1,6 +1,6 @@
 import React from 'react';
 import { Icon, List, Button } from 'antd';
-
+import Moment from 'react-moment';
 
 const IconText = ({ type, text }) => (
     <span>
@@ -12,33 +12,27 @@ const IconText = ({ type, text }) => (
 const Question = (props) => {
     return (
         <List
-            itemLayout="vertical"
-            size="large"
+            size="medium"
             pagination={{
                 onChange: page => {
                     console.log(page);
                 },
-                pageSize: 5,
+                pageSize: 10,
 
             }}
             dataSource={props.data}
-            footer={
-                <div>
-                </div>
-            }
             renderItem={item => (
-                <List.Item
-                    key={item.id}
-                    actions={[
-                        <IconText type="like-o" text={item.votes} key="list-vertical-like-o" />,
-                    ]}
-                >
+                <List.Item key={item.id}>
                     <List.Item.Meta
-                        title={<p>{item.question_text}</p>}
-                        description={item.description}
+                        title={<p>Asked on &nbsp;
+                                <Moment locale='en' format="DD MMM YYYY">
+                                {item.asked_date}
+                            </Moment>
+                        </p>}
+                        description={<p>{item.question_text}</p>}
                     />
-                    Asked on {item.asked_date}
-                </List.Item>
+                    <div>{<p>{item.votes} votes </p>}</div>
+                </List.Item >
             )}
         />
     )

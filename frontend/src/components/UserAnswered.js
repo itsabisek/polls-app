@@ -31,7 +31,7 @@ const UserAnswered = (props) => {
     }, [])
 
     return (
-        <UserLayout>
+        <UserLayout selected='answered'>
             <QuestionList />
         </UserLayout>
 

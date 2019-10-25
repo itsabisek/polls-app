@@ -11,7 +11,6 @@ const Dashboard = (props) => {
     const [state, setState] = useContext(PollsContext)
 
     useEffect(() => {
-        console.log(`Authentication status before fetching dashboard req: ${state.isAuthenticated}`)
         if (ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) {
             const config = {
                 headers: {
@@ -33,7 +32,7 @@ const Dashboard = (props) => {
     }, [])
 
     return (
-        <UserLayout>
+        <UserLayout selected="home">
             <QuestionList />
         </UserLayout>
     )
