@@ -1,18 +1,33 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Log in</title>
-  </head>
-  <body>
-    <p><b>LOG IN</b></p>
-    <div>
-      {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-      <form action="" method="POST">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" name="Login" value="Login">
+<html>
+{% load static %}
+<head>
+  <meta charset="utf-8">
+
+  <title>Login</title>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{% static "polls/main.css" %}">
+</head>
+<body>
+  <div action="" class="login-form">
+      <form id="form-login" action="" method="post">
+          <h2 class="text-center">Log in</h2>
+          <div class="form-group">
+              <input type="text" class="form-control" placeholder="Username" name="username" required>
+          </div>
+          <div class="form-group">
+              <input type="password" class="form-control" placeholder="Password" name="password" required>
+          </div>
+          <div class="form-group">
+              <button type="submit" class="btn btn-primary btn-block" id="login">Log in</button>
+          </div>
       </form>
-    </div>
-  </body>
+      <p class="text-center"><a href="{% url 'polls:register' %}">Create an Account</a></p>
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="{% static 'polls/main.js' %}"></script>
+</body>
 </html>
