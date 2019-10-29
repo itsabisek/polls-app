@@ -1,13 +1,10 @@
 import React, { useContext } from 'react';
 import { Form, Icon, Input, Button } from 'antd';
 import axios from 'axios';
-import { PollsContext } from './PollsContext'
 import ls from 'local-storage';
 import CustomLayout from '../containers/Layout'
 
 const NormalSignUpForm = (props) => {
-
-    const [state, setState] = useContext(PollsContext);
 
     const handleSubmit = e => {
         e.preventDefault();
@@ -31,12 +28,7 @@ const NormalSignUpForm = (props) => {
                 }
                 axios.post('http://localhost:8000/polls/api/register/', values)
                     .then(response => {
-                        setState({ ...state, token: response.data['AUTH_TOKEN'] })
-
-                    })
-                    .then(() => {
-                        ls.set('TOKEN', state.token)
-                        // setState({ ...state, isAuthenticated: true })
+                        ls.set('TOKEN', response.data['AUTH_TOKEN'])
                         props.history.push('/user')
                     })
                     .catch(error => {
@@ -54,6 +46,10 @@ const NormalSignUpForm = (props) => {
                                     value: ""
                                 }
                             })
+                        }
+                        if (error.response.status == 404) {
+                            console.log(error.response)
+                            props.history.push('/response404')
                         }
                     })
 
@@ -111,7 +107,7 @@ const NormalSignUpForm = (props) => {
                 </Form.Item>
                 <Form.Item>
                     <Button type="primary" htmlType="submit" className="login-form-button">
-                        Log in
+                        Sign Up
                     </Button>
                 </Form.Item>
             </Form>

@@ -4,6 +4,7 @@
 """
 
 from .models import Question, Answered, Choice
+from rest_framework import filters
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.renderers import JSONRenderer
 from rest_framework import generics
@@ -16,17 +17,31 @@ from django.contrib.auth import authenticate
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 import json
+import logging
+
+formatter = logging.Formatter(
+    "[%(asctime)s] [%(levelname)s] [%(name)s] - %(message)s")
+handler = logging.FileHandler('view_logs.log')
+handler.setFormatter(formatter)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 
 # Returns JSON for all questions asked
 class AllQuestionsView(generics.ListAPIView):
 
-    queryset = Question.objects.all()
+    queryset = Question.objects.all().order_by('-asked_date')
     serializer_class = QuestionSerializer
     renderer_classes = [JSONRenderer]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['question_text']
 
 
 # Returns JSON with the question text and the choices asked
+
+
 class DetailView(generics.ListAPIView):
 
     renderer_classes = [JSONRenderer]
@@ -56,6 +71,9 @@ class DetailView(generics.ListAPIView):
 
 # Returns JSON for recent questions in the User Dashboard
 class UserDashboardView(generics.ListAPIView):
+
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['question_text']
     renderer_classes = [JSONRenderer]
 
     def list(self, request):
@@ -73,7 +91,15 @@ class UserDashboardView(generics.ListAPIView):
                 asked_by_user = [question[0] for question in asked_by_user]
                 questions_to_exclude = set(answered_by_user + asked_by_user)
 
-                queryset = Question.objects.all().exclude(pk__in=questions_to_exclude)
+                qs = Question.objects.all().exclude(
+                    pk__in=questions_to_exclude).order_by('-asked_date')
+
+                queryset = self.filter_queryset(qs)
+                page = self.paginate_queryset(queryset)
+                if page is not None:
+                    serializer = QuestionSerializer(page, many=True)
+                    return self.get_paginated_response(serializer.data)
+
                 serializer = QuestionSerializer(queryset, many=True)
                 return Response(serializer.data, status=200)
             else:
@@ -86,34 +112,76 @@ class UserDashboardView(generics.ListAPIView):
 # Returns JSON for all questions asked by the user
 class UserAskedView(generics.ListAPIView):
 
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['question_text']
     renderer_classes = [JSONRenderer]
 
     def list(self, request):
-        authenticator = JSONWebTokenAuthentication()
-        is_auth = authenticator.authenticate(request)
-        if is_auth:
-            claim = authenticator.get_claim(request)
-            queryset = User.objects.get(pk=int(claim)).question_set.all()
-            serializer = QuestionDetailSerializer(queryset, many=True)
-            return Response(serializer.data, status=200)
-        else:
-            return HttpResponseForbidden("The page you are trying to view cannot be loaded")
+        try:
+            authenticator = JSONWebTokenAuthentication()
+            is_auth = authenticator.authenticate(request)
+            if is_auth:
+                claim = authenticator.get_claim(request)
+                qs = User.objects.get(
+                    pk=int(claim)).question_set.all().order_by('-asked_date')
+
+                queryset = self.filter_queryset(qs)
+                page = self.paginate_queryset(queryset)
+                if page is not None:
+                    serializer = QuestionDetailSerializer(page, many=True)
+                    return self.get_paginated_response(serializer.data)
+
+                serializer = QuestionDetailSerializer(queryset, many=True)
+                return Response(serializer.data, status=200)
+            else:
+                return HttpResponseForbidden("The page you are trying to view cannot be loaded")
+        except Exception, e:
+            print e
+            return HttpResponseForbidden("The page you requested cannot be loaded as %s" % e)
 
 
 # Returns JSON for all questions answered by the user
 class UserAnsweredView(generics.ListAPIView):
+
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['question_text']
     renderer_classes = [JSONRenderer]
 
     def list(self, request):
-        authenticator = JSONWebTokenAuthentication()
-        is_auth = authenticator.authenticate(request)
-        if is_auth:
-            claim = authenticator.get_claim(request)
-            queryset = Answered.objects.filter(user_id=int(claim))
-            serializer = QuestionAnsweredDetailSerializer(queryset, many=True)
-            return Response(serializer.data, status=200)
-        else:
-            return HttpResponseForbidden("The page you are trying to view cannot be loaded")
+        try:
+            authenticator = JSONWebTokenAuthentication()
+            is_auth = authenticator.authenticate(request)
+            if is_auth:
+                claim = authenticator.get_claim(request)
+
+                answered = Answered.objects.filter(
+                    user_id=int(claim)).order_by('-answered_on')
+
+                answered_question_ids = [
+                    question[0] for question in answered.values_list('question_id')]
+
+                questions_data = Question.objects.filter(
+                    pk__in=answered_question_ids)
+
+                questions_ids = [question[0]
+                                 for question in self.filter_queryset(questions_data).values_list('id')]
+
+                queryset = Answered.objects.filter(
+                    user_id=int(claim), question_id__in=questions_ids)
+                page = self.paginate_queryset(queryset)
+                if page is not None:
+                    serializer = QuestionAnsweredDetailSerializer(
+                        page, many=True)
+                    return self.get_paginated_response(serializer.data)
+
+                serializer = QuestionAnsweredDetailSerializer(
+                    queryset, many=True)
+                return Response(serializer.data, status=200)
+            else:
+                return HttpResponseForbidden("The page you are trying to view cannot be loaded")
+        except Exception, e:
+            print e
+            return HttpResponseForbidden("The page you are trying to view cannot be loaded as %s" % e)
 
 
 # Function to handle voting
@@ -224,7 +292,7 @@ def login_user(request):
                 # TODO: Validate request body here
                 data = json.loads(request.body.decode('utf-8'))
                 username = data['username'].strip()
-                password = data['password'].strip()
+                password = data['password']
 
             user = authenticate(username=username, password=password)
             if user is None:
@@ -255,7 +323,10 @@ def register_user(request):
                 data = json.loads(request.body.decode('utf-8'))
                 name = data['name'].strip()
                 username = data['username'].strip()
-                password = data['password'].strip()
+                password = data['password']
+
+            if " " in password or " " in username:
+                return HttpResponseForbidden("The username/password cannot contain whitespace")
 
             user = User.objects.filter(username=username)
             if len(user) != 0:
@@ -265,7 +336,8 @@ def register_user(request):
                 username=username, first_name=name, password=password)
             user.save()
 
-            return HttpResponseRedirect(reverse('polls:login_api'))
+            token = JSONWebTokenAuthentication().generate_token(user.id)
+            return HttpResponse(json.dumps({"AUTH_TOKEN": token}), content_type='application/json', status=200)
 
         except Exception, e:
             print e

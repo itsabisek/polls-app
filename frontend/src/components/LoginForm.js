@@ -2,7 +2,6 @@ import React, { useContext, useEffect } from 'react';
 import { Form, Icon, Input, Button } from 'antd';
 import CustomLayout from '../containers/Layout'
 import axios from 'axios';
-import { PollsContext } from './PollsContext'
 import ls from 'local-storage';
 
 const NormalLoginForm = (props) => {
@@ -33,6 +32,11 @@ const NormalLoginForm = (props) => {
                                     errors: [Error(error.response.data)]
                                 }
                             })
+
+                        }
+                        if (error.response.status === 404) {
+                            console.log(error.response)
+                            props.history.push('/response404')
 
                         }
                     })

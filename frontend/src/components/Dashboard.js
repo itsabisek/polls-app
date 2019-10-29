@@ -20,10 +20,11 @@ const Dashboard = (props) => {
 
             Axios.get('http://localhost:8000/polls/api/user', config)
                 .then(response => {
-                    setState({ ...state, polls: response.data })
+                    setState({ ...state, polls: response.data.results })
                 })
                 .catch(error => {
                     if (error.response.status === 403) {
+                        ls.remove('TOKEN')
                         props.history.push('/login')
                         console.log(error.response)
                     }
@@ -33,7 +34,7 @@ const Dashboard = (props) => {
 
     return (
         <UserLayout selected="home">
-            <QuestionList />
+            <QuestionList referer={props.history.location.pathname} />
         </UserLayout>
     )
 }

@@ -13,6 +13,7 @@ import UserAsked from './components/UserAsked';
 import UserAnswered from './components/UserAnswered';
 import NewPoll from './components/NewPoll';
 import PollDetail from './components/PollDetail';
+import Response404 from './components/Response404';
 
 
 export class App extends Component {
@@ -31,6 +32,7 @@ export class App extends Component {
               <ProtectedRoute path='/new' component={NewPoll} />
               <ProtectedRoute path='/detail/:question_id' component={PollDetail} />
               <ProtectedRoute path='/logout' component={Logout} />
+              <Route path='*' component={Response404} />
             </Switch>
           </Router>
         </div>

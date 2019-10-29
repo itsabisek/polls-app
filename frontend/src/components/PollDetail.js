@@ -58,6 +58,16 @@ const PollDetailForm = (props) => {
                 }
                 console.log(state)
             })
+            .catch(error => {
+                if (error.response.status === 403) {
+                    console.log(error.response)
+                    ls.remove('TOKEN')
+                    props.history.push('/login')
+                }
+                if (error.response.status === 404) {
+                    props.history.push('/404')
+                }
+            })
     }, [])
 
     const handleSubmit = e => {
@@ -88,7 +98,16 @@ const PollDetailForm = (props) => {
                             console.log(data.choices[0].choice_votes)
                         })
                         .catch(error => {
-                            console.log(error.response)
+                            if (error.response.status === 403) {
+                                console.log(error.response)
+                                ls.remove('TOKEN')
+                                props.history.push('/login')
+                            }
+                            if (error.response.status === 404) {
+                                console.log(error.response)
+                                props.history.push('/404')
+                            }
+
                         })
                 }
             }
@@ -119,7 +138,7 @@ const PollDetailForm = (props) => {
 
                     <span style={{ margin: '0 0 0 auto', fontSize: "9pt", fontStyle: 'italic' }}>
                         {state.total_votes}
-                        {state.total_votes > 1 ? ' people have voted' : ' person has voted'}
+                        {state.total_votes > 1 ? ' people have voted' : ' person have voted'}
                     </span>
                 </p>
                 <Form onSubmit={handleSubmit} className="vote-form" style={{ width: "100 %" }}>
@@ -159,7 +178,7 @@ const PollDetailForm = (props) => {
                     placement='topLeft'
                     content={<div><p>First Choice: {state.choice_1.choice_votes} votes</p>
                         <p>Second Choice: {state.choice_2.choice_votes} votes</p></div>}
-                    title="Choice 1"
+                    title="Results"
                     trigger="hover"
                     visible={!state.disableResult}>
                     <Progress

@@ -3,7 +3,6 @@ import { PollsContext } from './PollsContext'
 import Axios from 'axios'
 import { QuestionList } from '../containers/QuestionList'
 import ls from 'local-storage';
-import { Redirect } from 'react-router-dom';
 import UserLayout from '../containers/UserLayout';
 
 const UserAsked = (props) => {
@@ -18,10 +17,11 @@ const UserAsked = (props) => {
             }
             Axios.get('http://localhost:8000/polls/api/user/asked', config)
                 .then(response => {
-                    setState({ ...state, polls: response.data })
+                    setState({ ...state, polls: response.data.results })
                 })
                 .catch(error => {
                     if (error.response.status === 403) {
+                        ls.remove('TOKEN')
                         props.history.push('/login')
                         console.log(error.response)
                     }
@@ -32,7 +32,7 @@ const UserAsked = (props) => {
 
     return (
         <UserLayout selected="asked">
-            <QuestionList />
+            <QuestionList referer={props.history.location.pathname} />
         </UserLayout>
 
     )

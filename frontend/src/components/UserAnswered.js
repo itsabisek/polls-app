@@ -19,10 +19,11 @@ const UserAnswered = (props) => {
 
             Axios.get('http://localhost:8000/polls/api/user/answered', config)
                 .then(response => {
-                    setState({ ...state, polls: response.data })
+                    setState({ ...state, polls: response.data.results })
                 })
                 .catch(error => {
                     if (error.response.status === 403) {
+                        ls.remove('TOKEN')
                         props.history.push('/login')
                         console.log(error.response)
                     }
@@ -32,7 +33,7 @@ const UserAnswered = (props) => {
 
     return (
         <UserLayout selected='answered'>
-            <QuestionList />
+            <QuestionList referer={props.history.location.pathname} />
         </UserLayout>
 
     )

@@ -24,12 +24,12 @@ const Question = (props) => {
             renderItem={item => (
                 <List.Item key={item.id}>
                     <List.Item.Meta
-                        title={<p>Asked on &nbsp;
-                                <Moment locale='en' format="DD MMM YYYY">
+                        title={<a href={'/detail/' + item.question_id}>{item.question_text}</a>}
+                        description={<p>Asked on &nbsp;
+                            <Moment locale='en' format="DD MMM YYYY">
                                 {item.asked_date}
                             </Moment>
                         </p>}
-                        description={<p>{item.question_text}</p>}
                     />
                     <div>{<p>{item.votes} votes </p>}</div>
                 </List.Item >

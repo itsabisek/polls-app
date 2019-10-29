@@ -23,7 +23,12 @@ const NewPollForm = (props) => {
                             props.history.push(`/detail/${question_id}`)
                         })
                         .catch(error => {
-                            if (error.response.status == 403) {
+                            if (error.response.status === 403) {
+                                console.log(error.response)
+                                ls.remove('TOKEN')
+                                props.history.push('/login')
+                            }
+                            if (error.response.status === 404) {
                                 console.log(error.response)
                                 props.form.setFields({
                                     question: {

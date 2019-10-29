@@ -4,20 +4,30 @@ import { PollsContext } from './PollsContext';
 import { QuestionList } from '../containers/QuestionList';
 import CustomLayout from '../containers/Layout';
 
-const Index = () => {
+const Index = (props) => {
 
     const [state, setState] = useContext(PollsContext)
 
     useEffect(() => {
         Axios.get('http://localhost:8000/polls/api/all')
             .then(response => {
-                setState({ ...state, polls: response.data })
+                setState({ ...state, polls: response.data.results })
+            })
+            .catch(error => {
+                if (error.response.status == 403) {
+                    console.log(error.response)
+                }
+                if (error.response.status == 404) {
+                    console.log(error.response)
+                    props.history.push('/response404')
+                }
             })
     }, [])
 
+
     return (
         <CustomLayout >
-            <QuestionList />
+            <QuestionList referer={props.history.location.pathname} />
         </CustomLayout>
 
     )

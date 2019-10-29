@@ -12,7 +12,7 @@ const ProtectedRoute = ({ component: Component, ...rest }) => {
         <Route
             {...rest}
             render={(props) => {
-                // console.log(`Token is ${ls.get('TOKEN')}`)
+                console.log(`Token is ${ls.get('TOKEN')}`)
 
                 return ((ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) ?
                     <Component {...props} /> :
