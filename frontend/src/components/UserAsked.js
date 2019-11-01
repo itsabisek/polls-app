@@ -4,6 +4,7 @@ import Axios from 'axios'
 import { QuestionList } from '../containers/QuestionList'
 import ls from 'local-storage';
 import UserLayout from '../containers/UserLayout';
+import { message } from 'antd';
 
 const UserAsked = (props) => {
     const [state, setState] = useContext(PollsContext)
@@ -15,16 +16,36 @@ const UserAsked = (props) => {
                     'Authorization': ls.get('TOKEN')
                 }
             }
-            Axios.get('http://localhost:8000/polls/api/user/asked', config)
+            Axios.get('http://localhost:8000/polls/api/user/asked?offset=0&limit=10', config)
                 .then(response => {
-                    setState({ ...state, polls: response.data.results })
+                    setState({
+                        ...state,
+                        polls: response.data.results,
+                        total_polls: response.data.count,
+                        next_url: response.data.next,
+                        previous_url: response.data.previous
+                    })
                 })
                 .catch(error => {
-                    if (error.response.status === 403) {
-                        ls.remove('TOKEN')
-                        props.history.push('/login')
-                        console.log(error.response)
+                    if (error.resposne) {
+                        if (error.response.status === 403) {
+                            ls.remove('TOKEN')
+                            props.history.push('/login')
+                            console.log(error.response)
+                        }
+                        if (error.response.status === 404) {
+                            console.log(error)
+                            props.history.push('/response404')
+                        }
+                        else {
+                            console.log(error.response)
+                            message.error("Some error has occured")
+                        }
+                    } else {
+                        console.log(error)
+                        message.error("Some error has occured")
                     }
+
                 })
         }
     }, [])
@@ -32,7 +53,7 @@ const UserAsked = (props) => {
 
     return (
         <UserLayout selected="asked">
-            <QuestionList referer={props.history.location.pathname} />
+            <QuestionList referrer={props.history.location.pathname} />
         </UserLayout>
 
     )

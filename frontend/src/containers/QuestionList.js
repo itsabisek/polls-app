@@ -1,30 +1,51 @@
 import React, { useContext } from 'react';
 import Question from '../components/Question';
-import { Layout, Divider, Input } from 'antd';
+import { Divider, Input, Pagination, message } from 'antd';
 import { PollsContext } from '../components/PollsContext';
 import { Button } from 'antd/lib/radio';
 import { Link } from 'react-router-dom'
 import Axios from 'axios';
 import ls from 'local-storage'
 
-export const QuestionList = (props) => {
+export const QuestionList = (props, params) => {
 
     const [state, setState] = useContext(PollsContext)
+    let search_input = null
 
-    const get_info = (url, config) => {
+    const get_info = (url, config, current_page) => {
         Axios.get(url, config)
             .then(response => {
-                setState({ ...state, polls: response.data.results })
+                // console.log(response)
+                setState({
+                    ...state,
+                    polls: response.data.results,
+                    total_polls: response.data.count,
+                    next_url: response.data.next,
+                    previous_url: response.data.previous,
+                    current_page: current_page
+                })
+
             })
             .catch(error => {
-                if (error.response.status === 403) {
-                    console.log(error.response)
+                if (error.response) {
+                    if (error.response.status === 403) {
+                        console.log(error.response)
+                        message.error("Some error has occured")
+                    }
+
+                    if (error.response.status === 404) {
+                        console.log(error.response)
+                        props.history.push('/response404')
+                    }
+                    else {
+                        console.log(error.response)
+                        message.error("Some error has occured")
+                    }
+                } else {
+                    console.log(error)
+                    message.error("Some error occured")
                 }
 
-                if (error.response.status === 404) {
-                    console.log(error.response)
-                    props.history.push('/response404')
-                }
             })
     }
 
@@ -35,10 +56,10 @@ export const QuestionList = (props) => {
         else {
             let config = {}
 
-            const url = props.referer === '/' ? `http://localhost:8000/polls/api/all?search=${value}` :
-                `http://localhost:8000/polls/api${props.referer}?search=${value}`
+            const url = props.referrer === '/' ? `http://localhost:8000/polls/api/all?search=${value}&limit=10&offset=0` :
+                `http://localhost:8000/polls/api${props.referrer}?search=${value}&limit=10&offset=0`
 
-            console.log(url)
+            // console.log(url)
 
             if (ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) {
 
@@ -48,38 +69,27 @@ export const QuestionList = (props) => {
                     }
                 }
             }
-            get_info(url, config)
+            get_info(url, config, 1)
 
         }
 
     }
 
-    const onChange = event => {
+    const on_search_change = event => {
         let value = event.target.value
         let url = null
         let config = {}
         if (!value) {
-            url = props.referer === '/' ? `http://localhost:8000/polls/api/all` :
-                `http://localhost:8000/polls/api${props.referer}`
-
-            console.log(url)
-
-            if (ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) {
-
-                config = {
-                    headers: {
-                        'Authorization': ls.get('TOKEN')
-                    }
-                }
-            }
+            on_page_change(1)
+            return
         }
 
         else {
             if (event.target.value.length % 3 === 0) {
-                url = props.referer === '/' ? `http://localhost:8000/polls/api/all?search=${value}` :
-                    `http://localhost:8000/polls/api${props.referer}?search=${value}`
+                url = props.referrer === '/' ? `http://localhost:8000/polls/api/all?search=${value}` :
+                    `http://localhost:8000/polls/api${props.referrer}?search=${value}&limit=10&offset=0`
 
-                console.log(url)
+                // console.log(url)
 
                 if (ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) {
 
@@ -94,8 +104,35 @@ export const QuestionList = (props) => {
             }
         }
 
-        get_info(url, config)
+        get_info(url, config, 1)
 
+    }
+
+    const on_page_change = page => {
+        // console.log(page)
+        let query_string = ""
+        let config = {}
+        const limit = 10
+        const offset = (page - 1) * limit
+
+        if (search_input.input.input.value) {
+            query_string += `search=${search_input.input.input.value}&`
+        }
+
+        query_string += `limit=${limit}&offset=${offset}`
+        const url = props.referrer === '/' ? `http://localhost:8000/polls/api/all?${query_string}` :
+            `http://localhost:8000/polls/api${props.referrer}?${query_string}`
+
+        if (ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) {
+
+            config = {
+                headers: {
+                    'Authorization': ls.get('TOKEN')
+                }
+            }
+        }
+
+        get_info(url, config, page)
     }
 
     return (
@@ -104,16 +141,18 @@ export const QuestionList = (props) => {
                 width: "100 % ", display: 'flex'
             }}>
                 < div>
-                    <h1 style={{ margin: 0 }}>{state.polls.length}</h1>
+                    <h1 style={{ margin: 0 }}>{state.total_polls}</h1>
                     <span>polls</span>
                 </div>
-                <Input.Search
-                    // ref={(input) => { search_input = input; }}
-                    style={{ width: 300, margin: "auto auto auto 30%" }}
-                    placeholder="Search by question"
-                    onSearch={onSearch}
-                    onChange={onChange}
-                    enterButton />
+                <div style={{ width: 300, margin: "auto auto auto 30%" }}>
+                    <Input.Search
+                        ref={(node) => { search_input = node; }}
+                        placeholder="Search by question"
+                        onSearch={onSearch}
+                        onChange={on_search_change}
+                        enterButton />
+                </div>
+
                 <Link style={{ margin: "13px 10px 0 auto" }} to='/new'>
                     <Button >
                         Start a new poll
@@ -123,7 +162,14 @@ export const QuestionList = (props) => {
             </div >
 
             <Divider />
-            <Question data={state.polls} />
+            <Question data={state.polls} referrer={props.referrer} />
+            <Pagination
+                defaultCurrent={1}
+                current={state.current_page}
+                defaultPageSize={10}
+                onChange={on_page_change}
+                total={state.total_polls}
+            />
         </div >
     )
 }

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { Form, Icon, Input, Button } from 'antd';
+import { Form, Icon, Input, Button, message } from 'antd';
 import CustomLayout from '../containers/Layout'
 import axios from 'axios';
 import ls from 'local-storage';
@@ -7,6 +7,7 @@ import ls from 'local-storage';
 const NormalLoginForm = (props) => {
 
     useEffect(() => {
+        // console.log(props)
         if (ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) {
             props.history.push('/user')
         }
@@ -17,28 +18,45 @@ const NormalLoginForm = (props) => {
         e.preventDefault();
         props.form.validateFields((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values);
+                // console.log('Received values of form: ', values);
                 axios.post('http://localhost:8000/polls/api/login/', values)
                     .then(response => {
                         ls.set('TOKEN', response.data['AUTH_TOKEN'])
-                        props.history.push('/user')
+                        ls.set('NAME', response.data['NAME'].toUpperCase())
+                        message.success("Logged In Successfully")
+                        if (props.location.state) {
+                            if (props.location.state['referrer']) {
+                                props.history.push(props.location.state['referrer'])
+                            }
+                        } else {
+                            props.history.push('/user')
+                        }
+
                     })
                     .catch(error => {
-                        if (error.response.status === 403) {
-                            console.log(error.response)
-                            props.form.setFields({
-                                password: {
-                                    values: "",
-                                    errors: [Error(error.response.data)]
-                                }
-                            })
+                        if (error.response) {
+                            message.error("Failed!", 1)
+                            if (error.response.status === 403) {
+                                console.log(error.response)
+                                props.form.setFields({
+                                    password: {
+                                        values: "",
+                                        errors: [Error(error.response.data)]
+                                    }
+                                })
 
-                        }
-                        if (error.response.status === 404) {
-                            console.log(error.response)
-                            props.history.push('/response404')
+                            }
+                            if (error.response.status === 404) {
+                                message.error("Failed")
+                                console.log(error.response)
+                                props.history.push('/response404')
 
+                            }
+                        } else {
+                            console.log(error)
+                            message.error('Some error occured')
                         }
+
                     })
 
             }

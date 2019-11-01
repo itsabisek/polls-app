@@ -9,6 +9,7 @@
 from rest_framework.exceptions import AuthenticationFailed
 from datetime import datetime, timedelta
 import jwt
+from functools import wraps
 
 
 # Base class containing all the helper methods
@@ -32,7 +33,7 @@ class JSONWebTokenAuthentication():
         except KeyError:
             raise AuthenticationFailed("Token not found in header")
         except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed("Token has a failed signature")
+            raise AuthenticationFailed("Token has an expired signature")
         except jwt.InvalidSignatureError:
             raise AuthenticationFailed(
                 "Signature of token could not be validated")
@@ -62,3 +63,16 @@ class JSONWebTokenAuthentication():
             return jwt.decode(token, self._SECRET_KEY, algorithms=['HS256']).get('id')
         except KeyError:
             raise AuthenticationFailed("Token not found in header")
+
+
+# def auth_required(route_func):
+#     @wraps
+#     def authenticated_route_function(self, request, *args, **kwargs):
+#         try:
+#             authenticator = JSONWebTokenAuthentication()
+#             is_auth = authenticator.authenticate(request)
+#             if is_auth:
+#                 claim = authenticator.get_claim(request)
+#                 route_func(self, request, *args, claim=claim, **kwargs)
+#             else:
+#                 pass

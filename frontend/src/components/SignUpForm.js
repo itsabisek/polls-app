@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Form, Icon, Input, Button } from 'antd';
+import { Form, Icon, Input, Button, message } from 'antd';
 import axios from 'axios';
 import ls from 'local-storage';
 import CustomLayout from '../containers/Layout'
@@ -29,28 +29,38 @@ const NormalSignUpForm = (props) => {
                 axios.post('http://localhost:8000/polls/api/register/', values)
                     .then(response => {
                         ls.set('TOKEN', response.data['AUTH_TOKEN'])
+                        ls.set('NAME', response.data['NAME'].toUpperCase())
+                        message.success("You are now Registered!")
                         props.history.push('/user')
                     })
                     .catch(error => {
-                        if (error.response.status == 403) {
-                            console.log(error.response)
-                            props.form.setFields({
-                                username: {
-                                    value: values.username,
-                                    errors: [Error(error.response.data)]
-                                },
-                                password: {
-                                    value: ""
-                                },
-                                confirm: {
-                                    value: ""
-                                }
-                            })
+                        if (error.response) {
+                            if (error.response.status == 403) {
+                                message.error("Failed!", 1)
+                                console.log(error.response)
+                                props.form.setFields({
+                                    username: {
+                                        value: values.username,
+                                        errors: [Error(error.response.data)]
+                                    },
+                                    password: {
+                                        value: ""
+                                    },
+                                    confirm: {
+                                        value: ""
+                                    }
+                                })
+                            }
+                            if (error.response.status == 404) {
+                                message.error("Failed!")
+                                console.log(error.response)
+                                props.history.push('/response404')
+                            }
+                        } else {
+                            console.log(error)
+                            message.error("Some Error Occured!")
                         }
-                        if (error.response.status == 404) {
-                            console.log(error.response)
-                            props.history.push('/response404')
-                        }
+
                     })
 
             }

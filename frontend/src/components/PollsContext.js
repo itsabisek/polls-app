@@ -5,7 +5,12 @@ export const PollsContext = createContext();
 export const PollsProvider = (props) => {
     const [state, setState] = useState({
         polls: [],
-        name: "User"
+        total_polls: 0,
+        next_url: "",
+        previous_url: "",
+        limit: 10,
+        offset: 0,
+        current_page: 1
     });
 
 

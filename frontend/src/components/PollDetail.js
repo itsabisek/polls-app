@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Axios from 'axios'
 import ls from 'local-storage';
 import UserLayout from '../containers/UserLayout'
-import { Button, Card, Form, Radio, Progress, Popover } from 'antd';
+import { Button, Card, Form, Radio, Progress, Popover, message } from 'antd';
 import Moment from 'react-moment';
 
 const PollDetailForm = (props) => {
@@ -59,14 +59,24 @@ const PollDetailForm = (props) => {
                 console.log(state)
             })
             .catch(error => {
-                if (error.response.status === 403) {
-                    console.log(error.response)
-                    ls.remove('TOKEN')
-                    props.history.push('/login')
+                if (error.response) {
+                    if (error.response.status === 403) {
+                        console.log(error.response)
+                        ls.remove('TOKEN')
+                        props.history.push('/login')
+                    }
+                    if (error.response.status === 404) {
+                        props.history.push('/404')
+                    }
+                    else {
+                        console.log(error.response)
+                        message.error("Some error has occured")
+                    }
+                } else {
+                    console.log(error)
+                    message.error('Some error has occured')
                 }
-                if (error.response.status === 404) {
-                    props.history.push('/404')
-                }
+
             })
     }, [])
 
@@ -98,15 +108,25 @@ const PollDetailForm = (props) => {
                             console.log(data.choices[0].choice_votes)
                         })
                         .catch(error => {
-                            if (error.response.status === 403) {
-                                console.log(error.response)
-                                ls.remove('TOKEN')
-                                props.history.push('/login')
+                            if (error.response) {
+                                if (error.response.status === 403) {
+                                    console.log(error.response)
+                                    ls.remove('TOKEN')
+                                    props.history.push('/login')
+                                }
+                                if (error.response.status === 404) {
+                                    console.log(error.response)
+                                    props.history.push('/404')
+                                }
+                                else {
+                                    console.log(error.response)
+                                    message.error("Some error has occured")
+                                }
+                            } else {
+                                console.log(error)
+                                message.error("Some error has occured")
                             }
-                            if (error.response.status === 404) {
-                                console.log(error.response)
-                                props.history.push('/404')
-                            }
+
 
                         })
                 }

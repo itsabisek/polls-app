@@ -18,7 +18,6 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 import json
 import logging
-
 formatter = logging.Formatter(
     "[%(asctime)s] [%(levelname)s] [%(name)s] - %(message)s")
 handler = logging.FileHandler('view_logs.log')
@@ -154,6 +153,7 @@ class UserAnsweredView(generics.ListAPIView):
             if is_auth:
                 claim = authenticator.get_claim(request)
 
+                # claim = JSONWebTokenAuthentication.get_claim
                 answered = Answered.objects.filter(
                     user_id=int(claim)).order_by('-answered_on')
 
@@ -299,7 +299,8 @@ def login_user(request):
                 return HttpResponseForbidden("The username/password is not correct")
 
             token = JSONWebTokenAuthentication().generate_token(user.id)
-            return HttpResponse(json.dumps({"AUTH_TOKEN": token}), content_type='application/json', status=200)
+            res = json.dumps({"AUTH_TOKEN": token, "NAME": user.first_name})
+            return HttpResponse(res, content_type='application/json', status=200)
 
         except Exception, e:
             print e
@@ -337,7 +338,8 @@ def register_user(request):
             user.save()
 
             token = JSONWebTokenAuthentication().generate_token(user.id)
-            return HttpResponse(json.dumps({"AUTH_TOKEN": token}), content_type='application/json', status=200)
+            res = json.dumps({"AUTH_TOKEN": token, "NAME": user.first_name})
+            return HttpResponse(res, content_type='application/json', status=200)
 
         except Exception, e:
             print e
