@@ -118,5 +118,9 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer'
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100
+    'PAGE_SIZE': 100,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'polls.authentication.JSONWebTokenAuthentication',
+    ],
+
 }

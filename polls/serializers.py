@@ -38,7 +38,7 @@ class QuestionDetailSerializer(serializers.BaseSerializer):
 
     def to_representation(self, obj):
         choices = obj.choice_set.all()
-        total_votes = Answered.objects.filter(question_id=obj.id).count()
+        total_votes = choices[0].votes + choices[1].votes
         return{
             'question_id': obj.id,
             'question_text': obj.question_text,

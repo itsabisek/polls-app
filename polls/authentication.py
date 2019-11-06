@@ -7,13 +7,16 @@
 
 
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework import authentication
+from django.http import HttpResponseForbidden
 from datetime import datetime, timedelta
 import jwt
+from .models import User
 from functools import wraps
 
 
 # Base class containing all the helper methods
-class JSONWebTokenAuthentication():
+class JWTUtils():
 
     def __init__(self):
         self._SECRET_KEY = 'POLLS_APP_SECRET_KEY'
@@ -65,14 +68,31 @@ class JSONWebTokenAuthentication():
             raise AuthenticationFailed("Token not found in header")
 
 
-# def auth_required(route_func):
-#     @wraps
-#     def authenticated_route_function(self, request, *args, **kwargs):
-#         try:
-#             authenticator = JSONWebTokenAuthentication()
-#             is_auth = authenticator.authenticate(request)
-#             if is_auth:
-#                 claim = authenticator.get_claim(request)
-#                 route_func(self, request, *args, claim=claim, **kwargs)
-#             else:
-#                 pass
+class JSONWebTokenAuthentication(authentication.BaseAuthentication):
+    """
+        Custom authentication class that extends BaseAuthentication class of
+        rest_framework. .authenticate() method is overriden to check for JWT
+        in header and validate the signature of the token and return the User 
+        instance by getting the uuid from the token payload
+
+    """
+
+    def authenticate(self, request):
+        try:
+            user = None
+            authenticator = JWTUtils()
+            is_auth = authenticator.authenticate(request)
+            if is_auth:
+                claim = authenticator.get_claim(request)
+                if claim is not None:
+                    user = User.objects.get(uuid=claim)
+                print user.username
+
+        except User.DoesNotExist as e:
+            raise AuthenticationFailed("User doesn't exist. %s" % e)
+
+        except Exception as e:
+            raise e
+
+        finally:
+            return (user, None)
