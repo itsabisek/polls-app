@@ -1,9 +1,10 @@
 import React from 'react';
 import { Layout, Menu, Button, Icon, Typography } from 'antd';
 import { Link } from 'react-router-dom';
-
+import ls from 'local-storage';
 const { Title } = Typography;
 const { Header, Content, Footer } = Layout;
+
 
 const UserLayout = (props) => {
 
@@ -11,7 +12,8 @@ const UserLayout = (props) => {
         <Layout className="layout">
             <Header style={{ position: 'fixed', zIndex: 2, width: '100%' }}>
                 <Link to='/user'>
-                    <Title level={1} style={{ color: "#fff", margin: "8px 8px" }}>WELCOME USER</Title>
+                    <Title level={1} style={{ color: "#fff", margin: "8px 8px" }}>
+                        WELCOME {(ls.get('NAME') != null && ls.get('NAME').length != 0) ? ls.get('NAME') : "USER"}</Title>
                 </Link>
             </Header>
             <Layout>

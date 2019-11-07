@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Form, Icon, Input, Button } from 'antd';
+import { Form, Icon, Input, Button, message } from 'antd';
 import axios from 'axios';
 import ls from 'local-storage';
 import CustomLayout from '../containers/Layout'
@@ -8,9 +8,13 @@ const NormalSignUpForm = (props) => {
 
     const handleSubmit = e => {
         e.preventDefault();
+        const form_data = new FormData(e.target)
         props.form.validateFields((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values);
+                form_data.append('username', values['username'])
+                form_data.append('password', values['password'])
+                form_data.append('name', values['name'])
+                // console.log('Received values of form: ', values);
                 const password = values.password
                 const confirm = values.confirm
                 if (password !== confirm) {
@@ -26,31 +30,41 @@ const NormalSignUpForm = (props) => {
                     })
                     return
                 }
-                axios.post('http://localhost:8000/polls/api/register/', values)
+                axios.post('http://localhost:8000/polls/api/register/', form_data)
                     .then(response => {
                         ls.set('TOKEN', response.data['AUTH_TOKEN'])
+                        ls.set('NAME', response.data['NAME'].toUpperCase())
+                        message.success("You are now Registered!")
                         props.history.push('/user')
                     })
                     .catch(error => {
-                        if (error.response.status == 403) {
-                            console.log(error.response)
-                            props.form.setFields({
-                                username: {
-                                    value: values.username,
-                                    errors: [Error(error.response.data)]
-                                },
-                                password: {
-                                    value: ""
-                                },
-                                confirm: {
-                                    value: ""
-                                }
-                            })
+                        if (error.response) {
+                            if (error.response.status == 403) {
+                                message.error("Failed!", 1)
+                                console.log(error.response)
+                                props.form.setFields({
+                                    username: {
+                                        value: values.username,
+                                        errors: [Error(error.response.data)]
+                                    },
+                                    password: {
+                                        value: ""
+                                    },
+                                    confirm: {
+                                        value: ""
+                                    }
+                                })
+                            }
+                            if (error.response.status == 404) {
+                                message.error("Failed!")
+                                console.log(error.response)
+                                props.history.push('/response404')
+                            }
+                        } else {
+                            console.log(error)
+                            message.error("Some Error Occured!")
                         }
-                        if (error.response.status == 404) {
-                            console.log(error.response)
-                            props.history.push('/response404')
-                        }
+
                     })
 
             }

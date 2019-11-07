@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Icon, Input, Button } from 'antd';
+import { Form, Icon, Input, Button, message } from 'antd';
 import axios from 'axios';
 import UserLayout from '../containers/UserLayout'
 import ls from 'local-storage';
@@ -8,41 +8,55 @@ const NewPollForm = (props) => {
 
     const handleSubmit = e => {
         e.preventDefault();
+        const form_data = new FormData(e.target)
         props.form.validateFields((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values);
+                // console.log('Received values of form: ', values);
                 if (ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) {
                     const config = {
                         headers: {
                             'Authorization': ls.get('TOKEN')
                         }
                     }
-                    axios.post('http://localhost:8000/polls/api/user/new/', values, config)
+                    form_data.append('question', values['question'])
+                    form_data.append('choice_1', values['choice_1'])
+                    form_data.append('choice_2', values['choice_2'])
+                    axios.post('http://localhost:8000/polls/api/user/new/', form_data, config)
                         .then(response => {
                             const question_id = response.data['question_id']
                             props.history.push(`/detail/${question_id}`)
                         })
                         .catch(error => {
-                            if (error.response.status === 403) {
-                                console.log(error.response)
-                                ls.remove('TOKEN')
-                                props.history.push('/login')
+                            if (error.response) {
+                                if (error.response.status === 403) {
+                                    console.log(error.response)
+                                    ls.remove('TOKEN')
+                                    props.history.push('/login')
+                                }
+                                if (error.response.status === 404) {
+                                    console.log(error.response)
+                                    props.form.setFields({
+                                        question: {
+                                            value: values.question,
+                                            errors: [Error("The question could not be created. Try Again")]
+                                        },
+                                        choice_1: {
+                                            value: ""
+                                        },
+                                        choice_2: {
+                                            value: ""
+                                        }
+                                    })
+                                }
+                                else {
+                                    console.log(error.response)
+                                    message.error("Some error has occured")
+                                }
+                            } else {
+                                console.log(error)
+                                message.error("Some error has occured")
                             }
-                            if (error.response.status === 404) {
-                                console.log(error.response)
-                                props.form.setFields({
-                                    question: {
-                                        value: values.question,
-                                        errors: [Error("The question could not be created. Try Again")]
-                                    },
-                                    choice_1: {
-                                        value: ""
-                                    },
-                                    choice_2: {
-                                        value: ""
-                                    }
-                                })
-                            }
+
                         })
                 }
             }

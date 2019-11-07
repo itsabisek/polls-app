@@ -111,6 +111,8 @@ STATIC_URL = '/static/'
 
 LOGIN_URL = 'polls:login'
 
+# Rest Framework configuration
+# Specifies default classes to be used by rest_framework as a fallback
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -118,5 +120,14 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer'
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100
+    'PAGE_SIZE': 100,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'polls.authentication.JSONWebTokenAuthentication',
+    ],
+
 }
+
+# Few Constants
+LOGIN_URL = 'polls:login'
+KEY = 'POLLS_APP_SECRET_KEY'
+TOKEN_EXPIRE_TIME = 24
