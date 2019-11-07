@@ -8,9 +8,13 @@ const NormalSignUpForm = (props) => {
 
     const handleSubmit = e => {
         e.preventDefault();
+        const form_data = new FormData(e.target)
         props.form.validateFields((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values);
+                form_data.append('username', values['username'])
+                form_data.append('password', values['password'])
+                form_data.append('name', values['name'])
+                // console.log('Received values of form: ', values);
                 const password = values.password
                 const confirm = values.confirm
                 if (password !== confirm) {
@@ -26,7 +30,7 @@ const NormalSignUpForm = (props) => {
                     })
                     return
                 }
-                axios.post('http://localhost:8000/polls/api/register/', values)
+                axios.post('http://localhost:8000/polls/api/register/', form_data)
                     .then(response => {
                         ls.set('TOKEN', response.data['AUTH_TOKEN'])
                         ls.set('NAME', response.data['NAME'].toUpperCase())

@@ -16,10 +16,13 @@ const NormalLoginForm = (props) => {
 
     const handleSubmit = e => {
         e.preventDefault();
+        const form_data = new FormData(e.target)
         props.form.validateFields((err, values) => {
             if (!err) {
                 // console.log('Received values of form: ', values);
-                axios.post('http://localhost:8000/polls/api/login/', values)
+                form_data.append('username', values['username'])
+                form_data.append('password', values['password'])
+                axios.post('http://localhost:8000/polls/api/login/', form_data)
                     .then(response => {
                         ls.set('TOKEN', response.data['AUTH_TOKEN'])
                         ls.set('NAME', response.data['NAME'].toUpperCase())

@@ -111,6 +111,8 @@ STATIC_URL = '/static/'
 
 LOGIN_URL = 'polls:login'
 
+# Rest Framework configuration
+# Specifies default classes to be used by rest_framework as a fallback
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -124,3 +126,8 @@ REST_FRAMEWORK = {
     ],
 
 }
+
+# Few Constants
+LOGIN_URL = 'polls:login'
+KEY = 'POLLS_APP_SECRET_KEY'
+TOKEN_EXPIRE_TIME = 24

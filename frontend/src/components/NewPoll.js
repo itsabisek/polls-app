@@ -8,6 +8,7 @@ const NewPollForm = (props) => {
 
     const handleSubmit = e => {
         e.preventDefault();
+        const form_data = new FormData(e.target)
         props.form.validateFields((err, values) => {
             if (!err) {
                 // console.log('Received values of form: ', values);
@@ -17,7 +18,10 @@ const NewPollForm = (props) => {
                             'Authorization': ls.get('TOKEN')
                         }
                     }
-                    axios.post('http://localhost:8000/polls/api/user/new/', values, config)
+                    form_data.append('question', values['question'])
+                    form_data.append('choice_1', values['choice_1'])
+                    form_data.append('choice_2', values['choice_2'])
+                    axios.post('http://localhost:8000/polls/api/user/new/', form_data, config)
                         .then(response => {
                             const question_id = response.data['question_id']
                             props.history.push(`/detail/${question_id}`)

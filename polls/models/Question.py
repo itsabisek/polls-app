@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from .User import User
 import datetime
+from polls.utils import get_current_time
 
 
 class Question(models.Model):
@@ -15,7 +16,7 @@ class Question(models.Model):
         User, on_delete=models.CASCADE, default=0, null=False)
     question_text = models.CharField(max_length=200, null=False)
     asked_date = models.DateTimeField(
-        'date asked', default=timezone.now, null=False)
+        'date asked', default=get_current_time, null=False)
 
     # Returns True if poll was created with last 1 day; False otherwise
     def was_published_recently(self):

@@ -82,6 +82,7 @@ const PollDetailForm = (props) => {
 
     const handleSubmit = e => {
         e.preventDefault();
+        const form_data = new FormData(e.target)
         props.form.validateFields((err, values) => {
             if (!err) {
                 if (ls.get('TOKEN') != null && ls.get('TOKEN').length != 0) {
@@ -90,8 +91,8 @@ const PollDetailForm = (props) => {
                             'Authorization': ls.get('TOKEN')
                         }
                     }
-
-                    Axios.post(`http://localhost:8000/polls/api/vote/${props.match.params.question_id}/`, values, config)
+                    form_data.append('choice', values['choice'])
+                    Axios.post(`http://localhost:8000/polls/api/vote/${props.match.params.question_id}/`, form_data, config)
                         .then(response => {
                             const data = response.data
                             setState({

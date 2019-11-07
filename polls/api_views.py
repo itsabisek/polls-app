@@ -12,14 +12,15 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework import generics
 from rest_framework.response import Response
 from .serializers import QuestionSerializer, QuestionDetailSerializer, QuestionAnsweredDetailSerializer, QuestionDetailNoVotesSerializer
-from .authentication import JSONWebTokenAuthentication, JWTUtils
+from .authentication import JSONWebTokenAuthentication
+from utils import get_current_time, generate_token, authenticate_user
 from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponse, HttpResponseRedirect
-from django.contrib.auth.hashers import make_password, check_password
 from django.core.urlresolvers import reverse
-from django.utils import timezone
+from django.contrib.auth.hashers import make_password
 import json
 import logging
 import uuid
+
 formatter = logging.Formatter(
     "[%(asctime)s] [%(levelname)s] [%(name)s] - %(message)s")
 handler = logging.FileHandler('view_logs.log')
@@ -147,7 +148,7 @@ class UserAnsweredView(generics.ListAPIView):
                 question[0] for question in answered.values_list('question_id')]
 
             questions_data = Question.objects.filter(
-                pk__in=answered_question_ids)
+                pk__in=answered_question_ids).exclude(user__id=request.user.id)
 
             questions_ids = [question[0]
                              for question in self.filter_queryset(questions_data).values_list('id')]
@@ -172,39 +173,35 @@ class UserAnsweredView(generics.ListAPIView):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def vote(request, pk):
-    if request.method == 'POST':
-        try:
-            is_answered = Answered.objects.filter(
-                user_id=request.user.id, question_id=pk)
-            if len(is_answered) == 0:
-                if len(request.POST) != 0:
+    try:
+        is_answered = Answered.objects.filter(
+            user_id=request.user.id, question_id=pk)
+        if len(is_answered) == 0:
+            if len(request.POST) != 0:
                     # TODO: Validate POST data here
-                    post_data = request.POST['choice']
-                    choice_selected = post_data.strip() if isinstance(post_data, str)  \
-                        else post_data
-                else:
-                    # TODO: Validate request body here
-                    data = json.loads(request.body.decode('utf-8'))
-                    choice_selected = data['choice'].strip() if isinstance(data['choice'], str)  \
-                        else data['choice']
+                post_data = request.POST['choice']
+                choice_selected = post_data.strip() if isinstance(post_data, str)  \
+                    else post_data
+            else:
+                return HttpResponse("Did not find form data in body", status=500)
 
-                choice = Question.objects.get(
-                    pk=pk).choice_set.get(id=int(choice_selected))
-                choice.votes += 1
-                choice.save()
+            choice = Question.objects.get(
+                pk=pk).choice_set.get(id=int(choice_selected))
+            choice.votes += 1
+            choice.save()
 
-                answered = Answered(
-                    user_id=request.user.id, question_id=pk, answered_on=timezone.now())
-                answered.save()
+            answered = Answered(
+                user_id=request.user.id, question_id=pk, answered_on=get_current_time())
+            answered.save()
 
-            return HttpResponseRedirect(reverse('polls:detail_api', args=(pk,)))
+        return HttpResponseRedirect(reverse('polls:detail_api', args=(pk,)))
 
-        except Choice.DoesNotExist:
-            return HttpResponseNotFound("The selected choice was not found")
+    except Choice.DoesNotExist:
+        return HttpResponseNotFound("The selected choice was not found")
 
-        except Exception, e:
-            print e
-            return HttpResponseForbidden("The page you requested cannot be loaded")
+    except Exception, e:
+        print e
+        return HttpResponseForbidden("The page you requested cannot be loaded")
 
 
 # Function to handle creation of new poll.
@@ -218,19 +215,14 @@ def new_poll(request):
         try:
             user = User.objects.get(pk=request.user.id)
             if len(request.POST) != 0:
-                    # TODO: Validate post data here
+                # TODO: Validate post data here
                 poll_question = request.POST['question'].strip()
                 poll_choice_1 = request.POST['choice_1'].strip()
                 poll_choice_2 = request.POST['choice_2'].strip()
             else:
-                # TODO: Validate request body here
-                data = json.loads(request.body.decode('utf-8'))
-                poll_question = data['question'].strip()
-                poll_choice_1 = data['choice_1'].strip()
-                poll_choice_2 = data['choice_2'].strip()
-
+                return HttpResponse("Did not find form data in body", status=500)
             question = Question(question_text=poll_question,
-                                asked_date=timezone.now(),
+                                asked_date=get_current_time(),
                                 user=user)
             question.save()
             choice_1 = Choice(choice_text=poll_choice_1, question=question)
@@ -259,9 +251,7 @@ def login_user(request):
                 username = request.POST['username'].strip()
                 password = request.POST['password'].strip()
             else:
-                data = json.loads(request.body.decode('utf-8'))
-                username = data['username'].strip()
-                password = data['password'].strip()
+                return HttpResponse("Did not find form data in body", status=500)
 
             if username is None or password is None:
                 return HttpResponseForbidden("Please provide a valid name/username/password")
@@ -275,11 +265,11 @@ def login_user(request):
             if " " in password or " " in username:
                 return HttpResponseForbidden("The username/password is not correct")
 
-            user = authenticate(username=username, password=password)
+            user = authenticate_user(username=username, password=password)
             if user is None:
                 return HttpResponseForbidden("The username/password is not correct")
 
-            token = JWTUtils().generate_token(user.uuid)
+            token = generate_token(user.uuid)
             res = json.dumps({"AUTH_TOKEN": token, "NAME": user.name})
             return HttpResponse(res, content_type='application/json', status=200)
 
@@ -300,10 +290,7 @@ def register_user(request):
                 username = request.POST['username'].strip()
                 password = request.POST['password'].strip()
             else:
-                data = json.loads(request.body.decode('utf-8'))
-                name = data['name'].strip()
-                username = data['username'].strip()
-                password = data['password'].strip()
+                return HttpResponse("Did not find form data in body", status=500)
 
             if name is None or username is None or password is None:
                 return HttpResponseForbidden("Please provide a valid name/username/password")
@@ -325,7 +312,7 @@ def register_user(request):
                 username=username, name=name, password=make_password(password), uuid=uuid.uuid4().hex)
             user.save()
 
-            token = JWTUtils().generate_token(user.uuid)
+            token = generate_token(user.uuid)
             res = json.dumps({"AUTH_TOKEN": token, "NAME": user.name})
             return HttpResponse(res, content_type='application/json', status=200)
 
@@ -348,15 +335,3 @@ def logout_user(request):
 
         else:
             return HttpResponseForbidden("The page you requested cannot be loaded")
-
-
-def authenticate(username=None, password=None):
-    if username is None or password is None:
-        return None
-    try:
-        user = User.objects.get(username=username)
-        if check_password(password, user.password):
-            return user
-        return None
-    except User.DoesNotExist:
-        return None
